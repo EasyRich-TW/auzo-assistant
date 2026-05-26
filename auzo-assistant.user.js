@@ -5,6 +5,9 @@
 // @description  在奧索賓果網頁側邊自動嵌入 AI 萬象大師，並自動擋廣告與彈窗
 // @author       AI Master Team
 // @match        https://lotto.auzo.tw/bingobingo.php*
+// @match        http://lotto.auzo.tw/bingobingo.php*
+// @match        https://*.auzo.tw/bingobingo.php*
+// @match        http://*.auzo.tw/bingobingo.php*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=auzo.tw
 // @grant        GM_addStyle
 // @grant        GM_setValue
