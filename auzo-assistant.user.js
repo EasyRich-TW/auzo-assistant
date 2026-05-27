@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name         AI 萬象大師 - 奧索助手 (一鍵安裝版)
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      3.0.1
 // @description  在奧索賓果網頁側邊自動嵌入 AI 萬象大師，並自動擋廣告與彈窗
 // @author       AI Master Team
-// @match        https://lotto.auzo.tw/bingobingo.php*
-// @match        http://lotto.auzo.tw/bingobingo.php*
-// @match        https://*.auzo.tw/bingobingo.php*
-// @match        http://*.auzo.tw/bingobingo.php*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=auzo.tw
+// @match        https://lotto.auzo.tw/*
+// @match        http://lotto.auzo.tw/*
+// @match        https://*.auzo.tw/*
+// @match        http://*.auzo.tw/*
+// @updateURL    https://raw.githubusercontent.com/EasyRich-TW/auzo-assistant/master/auzo-assistant.user.js
+// @downloadURL  https://raw.githubusercontent.com/EasyRich-TW/auzo-assistant/master/auzo-assistant.user.js
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -79,10 +80,6 @@
             flex-direction: column;
         }
 
-        #ai-master-sidebar.is-hidden {
-            transform: translateX(100%);
-        }
-
         .ai-master-sidebar-header {
             flex: 0 0 auto;
             display: flex;
@@ -102,56 +99,11 @@
             font-weight: bold;
         }
 
-        .ai-master-close-btn {
-            flex: 0 0 auto;
-            width: 28px;
-            height: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #ccd6dd;
-            font-size: 14px;
-            line-height: 1;
-            cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .ai-master-close-btn:hover {
-            background: rgba(255, 107, 107, 0.15);
-            border-color: rgba(255, 107, 107, 0.45);
-            color: #ff8a8a;
-        }
-
         #ai-master-sidebar iframe {
             flex: 1 1 auto;
             width: 100%;
             border: none;
             background: #1a1a2e;
-        }
-
-        #ai-master-sidebar-toggle {
-            position: fixed;
-            top: 50%;
-            right: 8px;
-            transform: translateY(-50%);
-            z-index: 2147483647;
-            width: 36px;
-            height: 36px;
-            border: 1px solid rgba(72, 219, 251, 0.5);
-            border-radius: 8px;
-            background: rgba(26, 26, 46, 0.95);
-            color: #48dbfb;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.25);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s ease;
-        }
-
-        #ai-master-sidebar-toggle:hover {
-            background: rgba(72, 219, 251, 0.15);
         }
 
         /* 擋廣告樣式 */
@@ -201,10 +153,8 @@
     }
 
     // --- 4. 側邊欄邏輯 ---
-    function applyLayout(visible) {
-        document.documentElement.classList.toggle("ai-master-sidebar-open", visible);
-        const toggle = document.getElementById("ai-master-sidebar-toggle");
-        if (toggle) toggle.style.display = visible ? "none" : "flex";
+    function applyLayout() {
+        document.documentElement.classList.add("ai-master-sidebar-open");
     }
 
     function mountSidebar() {
@@ -212,41 +162,21 @@
 
         const sidebar = document.createElement("aside");
         sidebar.id = "ai-master-sidebar";
-        if (!GM_getValue("sidebarVisible", true)) sidebar.classList.add("is-hidden");
 
         const header = document.createElement("div");
         header.className = "ai-master-sidebar-header";
-        header.innerHTML = `
-            <span class="ai-master-sidebar-title">✨ AI 萬象大師</span>
-            <button class="ai-master-close-btn" title="關閉側邊欄">✕</button>
-        `;
+        header.innerHTML = `<span class="ai-master-sidebar-title">✨ AI 萬象大師</span>`;
 
         const iframe = document.createElement("iframe");
         const url = new URL(appBaseUrl);
         url.searchParams.set("store", storeCode);
         iframe.src = url.toString();
 
-        header.querySelector(".ai-master-close-btn").onclick = () => {
-            sidebar.classList.add("is-hidden");
-            applyLayout(false);
-            GM_setValue("sidebarVisible", false);
-        };
-
-        const toggle = document.createElement("button");
-        toggle.id = "ai-master-sidebar-toggle";
-        toggle.textContent = "✨";
-        toggle.onclick = () => {
-            sidebar.classList.remove("is-hidden");
-            applyLayout(true);
-            GM_setValue("sidebarVisible", true);
-        };
-
         sidebar.appendChild(header);
         sidebar.appendChild(iframe);
         document.body.appendChild(sidebar);
-        document.body.appendChild(toggle);
 
-        applyLayout(GM_getValue("sidebarVisible", true));
+        applyLayout();
     }
 
     // 啟動
