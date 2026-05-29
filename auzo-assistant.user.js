@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI 萬象大師 - 奧索助手 (一鍵安裝版)
 // @namespace    http://tampermonkey.net/
-// @version      3.1.1
+// @version      3.1.2
 // @noframes
 // @description  在奧索賓果網頁側邊自動嵌入 AI 萬象大師，並自動擋廣告與彈窗
 // @author       AI Master Team
@@ -22,30 +22,22 @@
 
     if (window.self !== window.top) return;
     if (window.__AI_MASTER_AUZO_SCRIPT__) return;
-    window.__AI_MASTER_AUZO_SCRIPT__ = "3.1.1";
+    window.__AI_MASTER_AUZO_SCRIPT__ = "3.1.2";
 
     const CHIP_ID = "ai-master-ad-chip-root";
 
     // --- 1. 設定區 ---
     const DEFAULT_APP_BASE_URL = "https://ai-omni-master.vercel.app";
-    const DEFAULT_STORE_CODE = "A0001";
+    const STORE_CODE = "Public";
     const SIDEBAR_WIDTH = 400;
 
     const appBaseUrl = GM_getValue("appBaseUrl", DEFAULT_APP_BASE_URL);
-    const storeCode = GM_getValue("storeCode", DEFAULT_STORE_CODE);
 
     // 註冊右鍵選單，方便修改設定
     GM_registerMenuCommand("設定 Vercel 網址", () => {
         const url = prompt("請輸入 Vercel 部署網址:", appBaseUrl);
         if (url) {
             GM_setValue("appBaseUrl", url.replace(/\/+$/, ""));
-            location.reload();
-        }
-    });
-    GM_registerMenuCommand("設定店家代號", () => {
-        const code = prompt("請輸入店家代號:", storeCode);
-        if (code) {
-            GM_setValue("storeCode", code);
             location.reload();
         }
     });
@@ -402,7 +394,7 @@
         if (!trimmed) return null;
         try {
             const url = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
-            if (storeCode) url.searchParams.set("store", storeCode);
+            url.searchParams.set("store", STORE_CODE);
             return url.toString();
         } catch {
             return null;
