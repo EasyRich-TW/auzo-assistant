@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI 萬象大師 - 奧索助手 (一鍵安裝版)
 // @namespace    http://tampermonkey.net/
-// @version      3.1.2
+// @version      3.1.3
 // @noframes
 // @description  在奧索賓果網頁側邊自動嵌入 AI 萬象大師，並自動擋廣告與彈窗
 // @author       AI Master Team
@@ -22,24 +22,61 @@
 
     if (window.self !== window.top) return;
     if (window.__AI_MASTER_AUZO_SCRIPT__) return;
-    window.__AI_MASTER_AUZO_SCRIPT__ = "3.1.2";
+    window.__AI_MASTER_AUZO_SCRIPT__ = "3.1.3";
 
     const CHIP_ID = "ai-master-ad-chip-root";
 
     // --- 1. 設定區 ---
     const DEFAULT_APP_BASE_URL = "https://ai-omni-master.vercel.app";
-    const STORE_CODE = "Public";
+    const DEFAULT_STORE_CODE = "Public";
+    const ADMIN_PASSWORD = "se466920";
     const SIDEBAR_WIDTH = 400;
 
-    const appBaseUrl = GM_getValue("appBaseUrl", DEFAULT_APP_BASE_URL);
+    function getStoreCode() {
+        const code = String(GM_getValue("storeCode", DEFAULT_STORE_CODE) || DEFAULT_STORE_CODE).trim();
+        return code || DEFAULT_STORE_CODE;
+    }
+
+    function maskStoreCode(code) {
+        const len = Math.max(String(code || "").trim().length, 6);
+        return "*".repeat(len);
+    }
+
+    function verifyAdminPassword(input) {
+        return input === ADMIN_PASSWORD;
+    }
+
+    function promptAdminPassword() {
+        const pwd = prompt("請輸入管理密碼：");
+        if (pwd === null) return false;
+        if (!verifyAdminPassword(pwd)) {
+            alert("密碼錯誤");
+            return false;
+        }
+        return true;
+    }
 
     // 註冊右鍵選單，方便修改設定
     GM_registerMenuCommand("設定 Vercel 網址", () => {
+        const appBaseUrl = GM_getValue("appBaseUrl", DEFAULT_APP_BASE_URL);
         const url = prompt("請輸入 Vercel 部署網址:", appBaseUrl);
         if (url) {
             GM_setValue("appBaseUrl", url.replace(/\/+$/, ""));
             location.reload();
         }
+    });
+
+    GM_registerMenuCommand(`店家代號：${maskStoreCode(getStoreCode())}（變更需密碼）`, () => {
+        if (!promptAdminPassword()) return;
+        const next = prompt("請輸入新的店家代號：");
+        if (next === null) return;
+        const trimmed = next.trim();
+        if (!trimmed) {
+            alert("店家代號不可為空");
+            return;
+        }
+        GM_setValue("storeCode", trimmed);
+        location.reload();
     });
 
     // --- 2. 樣式區 (CSS) ---
@@ -390,11 +427,12 @@
 
     // --- 4. 側邊欄邏輯 ---
     function buildAppUrl() {
+        const appBaseUrl = GM_getValue("appBaseUrl", DEFAULT_APP_BASE_URL);
         const trimmed = (appBaseUrl || "").trim().replace(/\/+$/, "");
         if (!trimmed) return null;
         try {
             const url = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
-            url.searchParams.set("store", STORE_CODE);
+            url.searchParams.set("store", getStoreCode());
             return url.toString();
         } catch {
             return null;
